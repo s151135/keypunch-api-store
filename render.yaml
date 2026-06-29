@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: keylaunch-api-store
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DEMO_CHECKOUT
+        value: false
+      - key: HOST
+        value: 0.0.0.0
+      - key: BASE_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false

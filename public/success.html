@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Payment Complete | KeyLaunch</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="plain-page" data-page-title="pageTitleSuccess">
+    <main class="success-wrap">
+      <a class="brand success-brand" href="/">
+        <span class="brand-mark">K</span>
+        <span>KeyLaunch</span>
+      </a>
+      <select class="language-select result-language" data-language-select aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh-CN">简体中文</option>
+        <option value="zh-TW">繁體中文</option>
+      </select>
+      <section class="result-panel" aria-live="polite">
+        <p class="eyebrow" data-i18n="successEyebrow">Payment complete</p>
+        <h1 data-i18n="successTitle">Your API key is ready.</h1>
+        <p id="statusText" data-i18n="verifyingSession">Verifying your checkout session...</p>
+        <div class="key-box" id="keyBox" hidden>
+          <label for="apiKey" data-i18n="apiKeyLabel">API key</label>
+          <div class="key-row">
+            <input id="apiKey" readonly value="">
+            <button class="button secondary" type="button" id="copyButton" data-i18n="copy">Copy</button>
+          </div>
+          <dl class="order-meta" id="orderMeta"></dl>
+        </div>
+        <a class="button primary" href="/" data-i18n="backToStore">Back to store</a>
+      </section>
+    </main>
+    <script type="module" src="/success.js"></script>
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KeyLaunch API Access</title>
+    <meta name="description" content="Sell API keys with hosted checkout, automatic fulfillment, and a clean customer purchase flow.">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-page-title="pageTitleHome">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="KeyLaunch home">
+        <span class="brand-mark">K</span>
+        <span>KeyLaunch</span>
+      </a>
+      <nav class="top-nav" aria-label="Primary navigation">
+        <a href="#plans" data-i18n="navPlans">Plans</a>
+        <a href="#security" data-i18n="navSecurity">Security</a>
+        <a href="#faq" data-i18n="navFaq">FAQ</a>
+      </nav>
+      <div class="header-tools">
+        <label class="language-label" for="languageSelect" data-i18n="languageLabel">Language</label>
+        <select class="language-select" id="languageSelect" data-language-select aria-label="Language">
+          <option value="en">English</option>
+          <option value="zh-CN">简体中文</option>
+          <option value="zh-TW">繁體中文</option>
+        </select>
+        <a class="header-action" href="#plans" data-i18n="buyAccess">Buy access</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="/assets/api-hero.png" alt="Developer dashboard showing secure API and checkout panels" data-i18n-alt="heroAlt">
+        <div class="hero-shade"></div>
+        <div class="hero-content">
+          <p class="eyebrow" data-i18n="heroEyebrow">Secure API key checkout</p>
+          <h1 id="hero-title" data-i18n="heroTitle">KeyLaunch API Access</h1>
+          <p class="hero-copy" data-i18n="heroCopy">Sell production-ready API keys through hosted payment, then issue credentials automatically after checkout succeeds.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#plans" data-i18n="choosePlan">Choose a plan</a>
+            <a class="button secondary" href="#security" data-i18n="viewFlow">View flow</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell intro-strip" aria-label="Store highlights">
+        <div>
+          <strong data-i18n="hostedCheckoutTitle">Hosted checkout</strong>
+          <span data-i18n="hostedCheckoutCopy">Stripe keeps card handling off your server.</span>
+        </div>
+        <div>
+          <strong data-i18n="automaticKeysTitle">Automatic keys</strong>
+          <span data-i18n="automaticKeysCopy">Paid sessions create unique API keys.</span>
+        </div>
+        <div>
+          <strong data-i18n="webhookReadyTitle">Webhook ready</strong>
+          <span data-i18n="webhookReadyCopy">Fulfillment runs when payment is confirmed.</span>
+        </div>
+      </section>
+
+      <section class="section shell" id="plans" aria-labelledby="plans-title">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="plansEyebrow">Plans</p>
+          <h2 id="plans-title" data-i18n="plansTitle">Pick the key that fits your traffic.</h2>
+        </div>
+        <div id="demoNotice" class="notice" data-i18n="demoNotice" hidden>
+          Demo checkout is enabled. You can test the full flow without charging a card.
+        </div>
+        <div id="plansGrid" class="plans-grid" aria-live="polite">
+          <div class="loading-card" data-i18n="loadingPlans">Loading plans...</div>
+        </div>
+      </section>
+
+      <section class="section process-band" id="security" aria-labelledby="security-title">
+        <div class="shell process-layout">
+          <div>
+            <p class="eyebrow" data-i18n="paymentFlowEyebrow">Payment flow</p>
+            <h2 id="security-title" data-i18n="securityTitle">A safer checkout path for selling access.</h2>
+            <p data-i18n="securityCopy">Customers never type card details into your server. They choose a plan, pay through the gateway, and return to a verified success page where their key is created.</p>
+          </div>
+          <ol class="steps">
+            <li>
+              <span>1</span>
+              <div>
+                <strong data-i18n="stepOneTitle">Customer selects a plan</strong>
+                <p data-i18n="stepOneCopy">The storefront posts the selected plan to your backend.</p>
+              </div>
+            </li>
+            <li>
+              <span>2</span>
+              <div>
+                <strong data-i18n="stepTwoTitle">Stripe hosts payment</strong>
+                <p data-i18n="stepTwoCopy">The backend creates a Checkout Session and redirects the customer.</p>
+              </div>
+            </li>
+            <li>
+              <span>3</span>
+              <div>
+                <strong data-i18n="stepThreeTitle">Key is issued after payment</strong>
+                <p data-i18n="stepThreeCopy">The success page and webhook both verify payment before fulfillment.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section shell" id="faq" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <p class="eyebrow" data-i18n="faqEyebrow">FAQ</p>
+          <h2 id="faq-title" data-i18n="faqTitle">Ready for the common questions.</h2>
+        </div>
+        <div class="faq-grid">
+          <article>
+            <h3 data-i18n="faqStorageTitle">Where are API keys stored?</h3>
+            <p data-i18n="faqStorageCopy">This starter stores orders in local JSON for development. For production, move orders and keys to a database with encryption at rest.</p>
+          </article>
+          <article>
+            <h3 data-i18n="faqEmailTitle">Can keys be emailed?</h3>
+            <p data-i18n="faqEmailCopy">Yes. Add a transactional email provider after the webhook fulfillment step to send keys and receipts.</p>
+          </article>
+          <article>
+            <h3 data-i18n="faqSubscriptionTitle">Can this handle subscriptions?</h3>
+            <p data-i18n="faqSubscriptionCopy">The current starter sells one-time access. Stripe subscriptions can be added by switching Checkout mode and mapping plans to recurring prices.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal" id="checkoutModal" hidden>
+      <div class="modal-backdrop" data-close-modal></div>
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="icon-button" type="button" aria-label="Close checkout" data-i18n-aria-label="checkoutCloseLabel" data-close-modal>x</button>
+        <p class="eyebrow" data-i18n="checkoutEyebrow">Checkout</p>
+        <h2 id="modalTitle" data-i18n="checkoutTitle">Complete your API access purchase</h2>
+        <p id="modalPlan" class="modal-plan"></p>
+        <form id="checkoutForm">
+          <label for="email" data-i18n="customerEmail">Customer email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" data-i18n-placeholder="emailPlaceholder" required>
+          <button class="button primary wide" type="submit" id="checkoutButton" data-i18n="continuePayment">Continue to payment</button>
+          <p class="form-note" data-i18n="formNote">The key is shown after payment succeeds. In production, also email it from the webhook.</p>
+        </form>
+      </section>
+    </div>
+
+    <footer class="site-footer shell">
+      <span>KeyLaunch API Access</span>
+      <span data-i18n="footerCopy">Built for hosted payments and automatic key delivery.</span>
+    </footer>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
