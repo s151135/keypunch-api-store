@@ -1,4 +1,4 @@
 .env
-data/orders.json
+data/*.json
 node_modules/
 .DS_Store

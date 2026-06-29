@@ -25,6 +25,7 @@
           <option value="zh-CN">简体中文</option>
           <option value="zh-TW">繁體中文</option>
         </select>
+        <button class="account-action" type="button" id="accountButton" data-i18n="signIn">Sign in</button>
         <a class="header-action" href="#plans" data-i18n="buyAccess">Buy access</a>
       </div>
     </header>
@@ -135,11 +136,56 @@
         <h2 id="modalTitle" data-i18n="checkoutTitle">Complete your API access purchase</h2>
         <p id="modalPlan" class="modal-plan"></p>
         <form id="checkoutForm">
-          <label for="email" data-i18n="customerEmail">Customer email</label>
-          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" data-i18n-placeholder="emailPlaceholder" required>
+          <p class="signed-in-note" id="checkoutIdentity"></p>
           <button class="button primary wide" type="submit" id="checkoutButton" data-i18n="continuePayment">Continue to payment</button>
           <p class="form-note" data-i18n="formNote">The key is shown after payment succeeds. In production, also email it from the webhook.</p>
         </form>
+      </section>
+    </div>
+
+    <div class="modal" id="authModal" hidden>
+      <div class="modal-backdrop" data-close-auth></div>
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <button class="icon-button" type="button" aria-label="Close account window" data-i18n-aria-label="closeAccount" data-close-auth>x</button>
+        <p class="eyebrow" data-i18n="accountEyebrow">Account</p>
+        <h2 id="authTitle" data-i18n="accountTitle">Sign in or create your account</h2>
+        <div class="auth-tabs" role="tablist" aria-label="Account forms">
+          <button class="auth-tab active" type="button" data-auth-mode="login" data-i18n="signIn">Sign in</button>
+          <button class="auth-tab" type="button" data-auth-mode="register" data-i18n="createAccount">Create account</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+          <label for="loginEmail" data-i18n="customerEmail">Customer email</label>
+          <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" data-i18n-placeholder="emailPlaceholder" required>
+          <label for="loginPassword" data-i18n="password">Password</label>
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+          <button class="button primary wide" type="submit" data-i18n="signIn">Sign in</button>
+        </form>
+        <form id="registerForm" class="auth-form" hidden>
+          <label for="registerName" data-i18n="fullName">Full name</label>
+          <input id="registerName" name="name" type="text" autocomplete="name" required>
+          <label for="registerEmail" data-i18n="customerEmail">Customer email</label>
+          <input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" data-i18n-placeholder="emailPlaceholder" required>
+          <label for="registerPassword" data-i18n="password">Password</label>
+          <input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="8" required>
+          <button class="button primary wide" type="submit" data-i18n="createAccount">Create account</button>
+          <p class="form-note" data-i18n="passwordHint">Use at least 8 characters.</p>
+        </form>
+        <p class="form-error" id="authError" hidden></p>
+      </section>
+    </div>
+
+    <div class="modal" id="accountModal" hidden>
+      <div class="modal-backdrop" data-close-account></div>
+      <section class="modal-panel account-panel" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+        <button class="icon-button" type="button" aria-label="Close account window" data-i18n-aria-label="closeAccount" data-close-account>x</button>
+        <p class="eyebrow" data-i18n="accountEyebrow">Account</p>
+        <h2 id="accountTitle" data-i18n="myAccount">My account</h2>
+        <div class="account-summary" id="accountSummary"></div>
+        <div class="account-orders">
+          <h3 data-i18n="savedPurchases">Saved purchases</h3>
+          <div id="accountOrders" class="account-order-list"></div>
+        </div>
+        <button class="button secondary wide" type="button" id="logoutButton" data-i18n="signOut">Sign out</button>
       </section>
     </div>
 

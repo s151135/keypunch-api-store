@@ -66,6 +66,7 @@ Do not commit real Stripe keys into files.
 ## 5. Before Serious Traffic
 
 - Replace `data/orders.json` with a real database.
+- Move account users, sessions, and orders out of local JSON storage before serious traffic.
 - Add transactional email delivery for API keys.
 - Add customer key rotation and revocation.
 - Add a real API-key validation service to the API product.

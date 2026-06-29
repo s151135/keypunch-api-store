@@ -9,10 +9,14 @@ const rootDir = path.resolve(__dirname, "..");
 const publicDir = path.join(rootDir, "public");
 const dataDir = path.join(rootDir, "data");
 const orderFile = path.join(dataDir, "orders.json");
+const userFile = path.join(dataDir, "users.json");
+const sessionFile = path.join(dataDir, "sessions.json");
 
 await loadEnv(path.join(rootDir, ".env"));
 await fs.mkdir(dataDir, { recursive: true });
 await ensureJsonFile(orderFile, []);
+await ensureJsonFile(userFile, []);
+await ensureJsonFile(sessionFile, []);
 
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || "127.0.0.1";
@@ -21,6 +25,8 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 const DEMO_CHECKOUT = String(process.env.DEMO_CHECKOUT ?? (!STRIPE_SECRET_KEY || STRIPE_SECRET_KEY.includes("replace_me"))).toLowerCase() === "true";
 const ALLOWED_ORIGINS = new Set((process.env.ALLOWED_ORIGINS || BASE_URL).split(",").map((origin) => origin.trim()).filter(Boolean));
+const SESSION_COOKIE = "kl_session";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const plans = {
   starter: {
@@ -69,6 +75,26 @@ const server = http.createServer(async (req, res) => {
       return sendJson(req, res, { plans: Object.values(plans), demoCheckout: DEMO_CHECKOUT });
     }
 
+    if (req.method === "GET" && url.pathname === "/api/auth/me") {
+      return getAuthMe(req, res);
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/auth/register") {
+      return registerUser(req, res);
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/auth/login") {
+      return loginUser(req, res);
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/auth/logout") {
+      return logoutUser(req, res);
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/account/orders") {
+      return getAccountOrders(req, res);
+    }
+
     if (req.method === "POST" && url.pathname === "/api/create-checkout-session") {
       return createCheckoutSession(req, res);
     }
@@ -95,17 +121,17 @@ server.listen(PORT, HOST, () => {
 
 async function createCheckoutSession(req, res) {
   setCors(req, res);
+  const user = await getCurrentUser(req);
+  if (!user) {
+    return sendJson(req, res, { error: "Sign in before checkout." }, 401);
+  }
+
   const body = await readJsonBody(req);
   const plan = plans[body.planId];
-  const email = normalizeEmail(body.email);
   const stripeLocale = stripeLocaleForLanguage(body.language);
 
   if (!plan) {
     return sendJson(req, res, { error: "Choose a valid plan." }, 400);
-  }
-
-  if (!email) {
-    return sendJson(req, res, { error: "Enter a valid customer email." }, 400);
   }
 
   if (DEMO_CHECKOUT) {
@@ -113,7 +139,8 @@ async function createCheckoutSession(req, res) {
     const order = await fulfillOrder({
       sessionId,
       planId: plan.id,
-      email,
+      userId: user.id,
+      email: user.email,
       paymentStatus: "paid",
       gateway: "demo"
     });
@@ -139,10 +166,8 @@ async function createCheckoutSession(req, res) {
   params.set("line_items[0][price_data][product_data][name]", plan.name);
   params.set("line_items[0][price_data][product_data][description]", `${plan.quota}. ${plan.description}`);
   params.set("metadata[planId]", plan.id);
-
-  if (email) {
-    params.set("customer_email", email);
-  }
+  params.set("metadata[userId]", user.id);
+  params.set("customer_email", user.email);
 
   if (stripeLocale) {
     params.set("locale", stripeLocale);
@@ -183,6 +208,7 @@ async function getOrder(req, res, url) {
       order = await fulfillOrder({
         sessionId: session.id,
         planId: session.metadata?.planId,
+        userId: session.metadata?.userId,
         email: session.customer_details?.email || session.customer_email || "",
         paymentStatus: session.payment_status,
         gateway: "stripe"
@@ -228,6 +254,7 @@ async function handleStripeWebhook(req, res) {
       await fulfillOrder({
         sessionId: session.id,
         planId: session.metadata?.planId,
+        userId: session.metadata?.userId,
         email: session.customer_details?.email || session.customer_email || "",
         paymentStatus: session.payment_status,
         gateway: "stripe"
@@ -238,7 +265,7 @@ async function handleStripeWebhook(req, res) {
   return sendJson(req, res, { received: true });
 }
 
-async function fulfillOrder({ sessionId, planId, email, paymentStatus, gateway }) {
+async function fulfillOrder({ sessionId, planId, userId, email, paymentStatus, gateway }) {
   if (!plans[planId]) {
     throw new Error(`Cannot fulfill unknown plan: ${planId}`);
   }
@@ -255,6 +282,7 @@ async function fulfillOrder({ sessionId, planId, email, paymentStatus, gateway }
     id: `ord_${crypto.randomUUID()}`,
     sessionId,
     planId,
+    userId: userId || "",
     email,
     paymentStatus,
     gateway,
@@ -266,6 +294,100 @@ async function fulfillOrder({ sessionId, planId, email, paymentStatus, gateway }
   orders.push(order);
   await fs.writeFile(orderFile, JSON.stringify(orders, null, 2));
   return order;
+}
+
+async function getAuthMe(req, res) {
+  const user = await getCurrentUser(req);
+  return sendJson(req, res, { user: user ? publicUser(user) : null });
+}
+
+async function registerUser(req, res) {
+  const body = await readJsonBody(req);
+  const email = normalizeEmail(body.email);
+  const name = normalizeName(body.name);
+  const password = typeof body.password === "string" ? body.password : "";
+
+  if (!name) {
+    return sendJson(req, res, { error: "Enter your name." }, 400);
+  }
+
+  if (!email) {
+    return sendJson(req, res, { error: "Enter a valid email." }, 400);
+  }
+
+  if (password.length < 8) {
+    return sendJson(req, res, { error: "Use at least 8 characters for your password." }, 400);
+  }
+
+  const users = await readUsers();
+  if (users.some((user) => user.email === email)) {
+    return sendJson(req, res, { error: "An account already exists for this email." }, 409);
+  }
+
+  const now = new Date().toISOString();
+  const user = {
+    id: `usr_${crypto.randomUUID()}`,
+    name,
+    email,
+    passwordHash: hashPassword(password),
+    createdAt: now,
+    updatedAt: now
+  };
+
+  users.push(user);
+  await fs.writeFile(userFile, JSON.stringify(users, null, 2));
+  await createSession(res, user.id);
+  return sendJson(req, res, { user: publicUser(user) }, 201);
+}
+
+async function loginUser(req, res) {
+  const body = await readJsonBody(req);
+  const email = normalizeEmail(body.email);
+  const password = typeof body.password === "string" ? body.password : "";
+  const users = await readUsers();
+  const user = users.find((candidate) => candidate.email === email);
+
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    return sendJson(req, res, { error: "Email or password is incorrect." }, 401);
+  }
+
+  await createSession(res, user.id);
+  return sendJson(req, res, { user: publicUser(user) });
+}
+
+async function logoutUser(req, res) {
+  const token = parseCookies(req.headers.cookie || "")[SESSION_COOKIE];
+  if (token) {
+    const sessions = await readSessions();
+    await fs.writeFile(sessionFile, JSON.stringify(sessions.filter((session) => session.token !== token), null, 2));
+  }
+
+  clearSessionCookie(res);
+  return sendJson(req, res, { ok: true });
+}
+
+async function getAccountOrders(req, res) {
+  const user = await getCurrentUser(req);
+  if (!user) {
+    return sendJson(req, res, { error: "Sign in to view your account." }, 401);
+  }
+
+  const orders = await readOrders();
+  const accountOrders = orders
+    .filter((order) => order.userId === user.id || (!order.userId && order.email === user.email))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((order) => ({
+      id: order.id,
+      planId: order.planId,
+      planName: plans[order.planId]?.name || order.planId,
+      quota: plans[order.planId]?.quota,
+      apiKey: order.apiKey,
+      paymentStatus: order.paymentStatus,
+      gateway: order.gateway,
+      createdAt: order.createdAt
+    }));
+
+  return sendJson(req, res, { orders: accountOrders });
 }
 
 async function retrieveStripeSession(sessionId) {
@@ -345,6 +467,14 @@ async function readOrders() {
   return JSON.parse(await fs.readFile(orderFile, "utf8"));
 }
 
+async function readUsers() {
+  return JSON.parse(await fs.readFile(userFile, "utf8"));
+}
+
+async function readSessions() {
+  return JSON.parse(await fs.readFile(sessionFile, "utf8"));
+}
+
 async function findOrderBySession(sessionId) {
   const orders = await readOrders();
   return orders.find((order) => order.sessionId === sessionId);
@@ -362,6 +492,83 @@ function normalizeEmail(email) {
 
   const trimmed = email.trim().toLowerCase();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : "";
+}
+
+function normalizeName(name) {
+  if (typeof name !== "string") {
+    return "";
+  }
+
+  return name.trim().replace(/\s+/g, " ").slice(0, 80);
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("base64url");
+  const hash = crypto.scryptSync(password, salt, 64).toString("base64url");
+  return `scrypt$${salt}$${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+  const [algorithm, salt, hash] = String(storedHash).split("$");
+  if (algorithm !== "scrypt" || !salt || !hash) {
+    return false;
+  }
+
+  const expected = Buffer.from(hash, "base64url");
+  const actual = crypto.scryptSync(password, salt, 64);
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+}
+
+async function getCurrentUser(req) {
+  const token = parseCookies(req.headers.cookie || "")[SESSION_COOKIE];
+  if (!token) {
+    return null;
+  }
+
+  const sessions = await readSessions();
+  const now = Date.now();
+  const session = sessions.find((candidate) => candidate.token === token && Date.parse(candidate.expiresAt) > now);
+  if (!session) {
+    return null;
+  }
+
+  const users = await readUsers();
+  return users.find((user) => user.id === session.userId) || null;
+}
+
+async function createSession(res, userId) {
+  const sessions = await readSessions();
+  const token = crypto.randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toISOString();
+  sessions.push({ token, userId, createdAt: new Date().toISOString(), expiresAt });
+  await fs.writeFile(sessionFile, JSON.stringify(sessions, null, 2));
+  setSessionCookie(res, token);
+}
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt
+  };
+}
+
+function parseCookies(cookieHeader) {
+  return Object.fromEntries(cookieHeader.split(";").map((cookie) => {
+    const [name, ...value] = cookie.trim().split("=");
+    return [name, decodeURIComponent(value.join("=") || "")];
+  }).filter(([name]) => name));
+}
+
+function setSessionCookie(res, token) {
+  const secure = BASE_URL.startsWith("https://") ? "; Secure" : "";
+  res.setHeader("Set-Cookie", `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}${secure}`);
+}
+
+function clearSessionCookie(res) {
+  const secure = BASE_URL.startsWith("https://") ? "; Secure" : "";
+  res.setHeader("Set-Cookie", `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`);
 }
 
 function stripeLocaleForLanguage(language) {

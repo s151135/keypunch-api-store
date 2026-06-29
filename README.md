@@ -1,14 +1,15 @@
 # KeyLaunch API Key Store
 
-A runnable starter website for selling API keys. Customers choose a plan, enter an email address, pay through hosted checkout, and receive a generated API key after payment is confirmed.
+A runnable starter website for selling API keys. Customers create an account, choose a plan, pay through hosted checkout, and receive a generated API key after payment is confirmed.
 
 ## Plan Structure
 
 1. Storefront: public website with plan cards, purchase flow, and success/cancel pages.
 2. Payment gateway: backend creates Stripe Checkout Sessions so card details are handled by Stripe.
-3. Fulfillment: backend verifies payment, generates an API key, and stores the order.
-4. Reliability: Stripe webhook endpoint fulfills paid sessions even if the customer closes the browser.
-5. Production hardening: replace local JSON storage with a database, add email delivery, key revocation, rate limits, and an admin dashboard.
+3. Accounts: customers register/sign in, then purchases are saved to their account.
+4. Fulfillment: backend verifies payment, generates an API key, and stores the order.
+5. Reliability: Stripe webhook endpoint fulfills paid sessions even if the customer closes the browser.
+6. Production hardening: replace local JSON storage with a database, add email delivery, key revocation, rate limits, and an admin dashboard.
 
 ## Current Plans
 
@@ -71,14 +72,14 @@ Useful Stripe references:
 ## Files
 
 - `public/index.html`: storefront and plan layout.
-- `public/app.js`: loads plans and starts checkout.
+- `public/app.js`: loads plans, manages accounts, and starts checkout.
 - `public/success.html`: shows the issued API key after payment verification.
-- `src/server.mjs`: HTTP server, Stripe integration, webhook verification, and key generation.
-- `data/orders.json`: local development order store, created at runtime.
+- `src/server.mjs`: HTTP server, account sessions, Stripe integration, webhook verification, and key generation.
+- `data/*.json`: local development account/session/order stores, created at runtime and ignored by Git.
 
 ## Before Launch
 
-- Use a real database instead of `data/orders.json`.
+- Use a real database instead of local `data/*.json` account/session/order files.
 - Encrypt API keys at rest or store only hashed keys plus a one-time reveal secret.
 - Email keys from the webhook through a transactional email provider.
 - Add an authenticated customer portal for key rotation and billing history.

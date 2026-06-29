@@ -141,6 +141,22 @@ select {
   cursor: pointer;
 }
 
+.account-action {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid rgba(16, 32, 39, 0.16);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.account-action:hover {
+  background: #edf5f5;
+}
+
 .hero {
   position: relative;
   display: grid;
@@ -525,6 +541,8 @@ select {
 .modal-panel {
   position: relative;
   width: min(470px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
   padding: 28px;
   border-radius: 8px;
   background: var(--white);
@@ -539,6 +557,112 @@ select {
 
 .modal-plan {
   margin: 12px 0 22px;
+}
+
+.signed-in-note,
+.form-error,
+.account-summary,
+.account-empty {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.signed-in-note,
+.account-summary,
+.account-empty {
+  background: #f2f7f7;
+  color: var(--muted);
+}
+
+.form-error {
+  margin-top: 14px;
+  border: 1px solid #efb3a5;
+  background: #fff1ed;
+  color: #8c2f1d;
+  font-weight: 750;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.auth-tab {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.auth-tab.active {
+  border-color: rgba(11, 123, 131, 0.32);
+  background: #e7f3f3;
+  color: var(--teal-dark);
+}
+
+.auth-form[hidden] {
+  display: none;
+}
+
+.account-panel {
+  width: min(620px, 100%);
+}
+
+.account-summary {
+  display: grid;
+  gap: 2px;
+  margin: 18px 0;
+}
+
+.account-summary strong {
+  color: var(--ink);
+}
+
+.account-orders h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.account-order-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.account-order {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfd;
+}
+
+.account-order div {
+  display: grid;
+  gap: 3px;
+}
+
+.account-order span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.account-order code {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 10px;
+  border-radius: 8px;
+  background: #eef5f5;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.88rem;
 }
 
 .icon-button {
@@ -738,6 +862,15 @@ select:focus {
 
   .header-tools {
     gap: 6px;
+  }
+
+  .account-action {
+    min-height: 38px;
+    max-width: 86px;
+    overflow: hidden;
+    padding: 0 10px;
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
   }
 
   .language-select {
