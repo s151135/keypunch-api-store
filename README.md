@@ -13,11 +13,11 @@ A runnable starter website for selling API keys. Customers create an account, ch
 
 ## Current Plans
 
-- Starter: `$39` one-time, 50,000 requests per month.
-- Growth: `$99` one-time, 250,000 requests per month.
-- Business: `$299` one-time, 1,000,000 requests per month.
+- Starter: `HK$299` one-time, 50,000 requests per month.
+- Growth: `HK$799` one-time, 250,000 requests per month.
+- Business: `HK$2,299` one-time, 1,000,000 requests per month.
 
-These prices are intentionally higher than demo pricing so there is room for payment fees, infrastructure cost, support time, and profit. Recheck the quotas after you know your real cost per API request.
+These prices are intentionally higher than demo pricing so there is room for payment fees, infrastructure cost, support time, and profit. The checkout currency is HKD to better support Hong Kong Stripe accounts and regional payment methods such as Alipay and WeChat Pay. Recheck the quotas after you know your real cost per API request.
 
 ## Languages
 

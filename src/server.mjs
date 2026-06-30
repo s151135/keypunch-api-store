@@ -32,24 +32,24 @@ const plans = {
   starter: {
     id: "starter",
     name: "Starter API Key",
-    priceCents: 3900,
-    currency: "usd",
+    priceCents: 29900,
+    currency: "hkd",
     quota: "50,000 requests / month",
     description: "A profitable entry plan for prototypes, MVPs, and low-volume internal tools."
   },
   growth: {
     id: "growth",
     name: "Growth API Key",
-    priceCents: 9900,
-    currency: "usd",
+    priceCents: 79900,
+    currency: "hkd",
     quota: "250,000 requests / month",
     description: "A stronger margin plan with priority routing and room for a growing product."
   },
   business: {
     id: "business",
     name: "Business API Key",
-    priceCents: 29900,
-    currency: "usd",
+    priceCents: 229900,
+    currency: "hkd",
     quota: "1,000,000 requests / month",
     description: "Premium production access for teams that need scale, support, and reliability."
   }
